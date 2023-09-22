@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui" xmlns:ui="http://java.sun.com/jsf/facelets"
+      lang="es"
+      xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+    <title>Gestion de Pedidos</title>
+
+    <ui:include src="header.xhtml"/>
+</h:head>
+<f:metadata>
+    <f:viewAction action="#{pedidosBean.init()}"></f:viewAction>
+    <f:viewAction action="#{pedidosBean.actualizarTabla()}"></f:viewAction>
+</f:metadata>
+
+<title>Prueba 1</title>
+<h:body style="background-color: #0b5ed7 ">
+
+    <p:breadCrumb>
+        <p:menuitem value="Categories" url="#" />
+        <p:menuitem>Pedidos Registrados</p:menuitem>
+    </p:breadCrumb>
+    <div class="card">
+        <h:form id="form">
+            <p:growl id="messages" showDetail="true"/>
+            <!-- Tabla de pedidos -->
+            <p:dataTable id="dt-pedidos" widgetVar="dtPedidos" var="pedido" value="#{pedidosBean.pedidos}"
+                         reflow="true" styleClass="products-table" selection="#{pedidosBean.pedidosSeleccionados}"
+                         rowKey="#{pedido.idPedido}" paginator="true" rows="5" rowSelectMode="add"
+                         paginatorPosition="top">
+                <!--                Eventos de seleccion -->
+
+                <p:ajax event="rowSelect" update=":form:delete-products-button :form:download "/>
+                <p:ajax event="rowUnselect" update=":form:delete-products-button  :form:download"/>
+                <p:ajax event="rowSelectCheckbox" update=":form:delete-products-button  :form:download"/>
+                <p:ajax event="rowUnselectCheckbox" update=":form:delete-products-button  :form:download"/>
+                <p:ajax event="toggleSelect" update=":form:delete-products-button  :form:download"/>
+
+                <p:column selectionMode="multiple" exportable="false"></p:column>
+                <!--                Columnas tabla-->
+                <p:column headerText="Numero Pedido" sortBy="#{pedido.idPedido}">
+                    <h:outputText value="#{pedido.idPedido}"/>
+                </p:column>
+                <p:column headerText="Descripcion" sortBy="#{pedido.descripcionPedido}">
+                    <h:outputText value="#{pedido.descripcionPedido}"/>
+                </p:column>
+                <p:column headerText="Cliente" sortBy="#{pedido.clientePedido}">
+                    <h:outputText value="#{pedido.clientePedido}"/>
+                </p:column>
+
+                <p:column headerText="Variedad articulos" sortBy="#{pedido.articulosPedido.size()}">
+                    <h:outputText value="#{pedido.articulosPedido.size()} diferentes"/>
+                </p:column>
+                <!-- Columna operaciones CRUD -->
+                <p:column exportable="false">
+                    <!-- Boton eliminar pedido-->
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('ventanaEliminar').show()">
+                        <f:setPropertyActionListener value="#{pedido}"
+                                                     target="#{pedidosBean.pedidoSeleccionado}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+            <!-- Barra Herramientas -->
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <!-- Boton eliminar pedidos seleccionados -->
+                    <p:commandButton id="delete-products-button" value="Eliminar seleccionados"
+                                     icon="pi pi-trash" styleClass="ui-button-danger"
+                                     disabled="#{pedidosBean.pedidosSeleccionados.size() == 0}"
+                                     actionListener="#{pedidosBean.eliminarSeleccionados()}"
+                                     update="@this">
+                        <p:confirm header="Advertencia"
+                                   message="¿Eliminar productos seleccionados? Esto tambien eliminara sus partidas asociadas"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                    <p:commandButton
+                            id="download" value=" Descargar pdf " styleClass="ui-button-info"
+                            style="margin-left: 60px"
+
+                            disabled="#{pedidosBean.pedidosSeleccionados.size() != 1}"
+                            actionListener="#{pedidosBean.crearPdf()}"
+                            onAction="#{pedidosBean.crearPdf()}}"
+                            update="@this"
+                            icon="pi pi-arrow-down">
+                        <p:fileDownload value="#{pedidosBean.pdfPedido}"/>
+                    </p:commandButton>
+
+                </p:toolbarGroup>
+            </p:toolbar>
+        </h:form>
+
+        <!-- Formularios en dialogo -->
+        <h:form id="dialogs">
+
+            <!-- Dialogo confirmar elimininar -->
+
+            <p:confirmDialog widgetVar="ventanaEliminar" showEffect="fade" width="300"
+                             message="¿Eliminar pedido?. Esto tambien eliminara sus partidas asociadas"
+                             header="Precaución" severity="warn">
+                <p:commandButton value="Si" icon="pi pi-check" actionListener="#{pedidosBean.eliminarPedido()}"
+                                 process="@this" update=":form:delete-products-button  :form:download"
+                                 oncomplete="PF('ventanaEliminar').hide()"/>
+                <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('ventanaEliminar').hide()"/>
+            </p:confirmDialog>
+
+
+            <!-- Dialogo confirmar elimininar seleccionados-->
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Eliminar" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times"/>
+            </p:confirmDialog>
+        </h:form>
+    </div>
+</h:body>
+</html>

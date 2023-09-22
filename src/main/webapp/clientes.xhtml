@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui" xmlns:ui="http://java.sun.com/jsf/facelets"
+      lang="es"
+      xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+    <title>Gestion de Clientes</title>
+
+    <ui:include src="header.xhtml"/>
+</h:head>
+<f:metadata>
+    <f:viewAction action="#{clientesBean.init()}"></f:viewAction>
+</f:metadata>
+<title>Prueba 1</title>
+<h:body style="background-color: #0b5ed7 ">
+
+    <p:breadCrumb>
+        <p:menuitem value="Categories" url="#" />
+        <p:menuitem>Clientes</p:menuitem>
+    </p:breadCrumb>
+    <div class="card">
+        <h:form id="form">
+            <p:growl id="messages" showDetail="true"/>
+            <!-- Tabla de clientes -->
+            <p:dataTable id="dt-clientes" widgetVar="dtClientes" var="cliente" value="#{clientesBean.clientes}"
+                         reflow="true" styleClass="products-table" selection="#{clientesBean.clientesSeleccionados}"
+                         rowKey="#{cliente.idCliente}" paginator="true" rows="5" rowSelectMode="add"
+                         paginatorPosition="top">
+                <!--                Eventos de seleccion -->
+
+                <p:ajax event="rowSelect" update=":form:delete-products-button"/>
+                <p:ajax event="rowUnselect" update=":form:delete-products-button"/>
+                <p:ajax event="rowSelectCheckbox" update=":form:delete-products-button"/>
+                <p:ajax event="rowUnselectCheckbox" update=":form:delete-products-button"/>
+                <p:ajax event="toggleSelect" update=":form:delete-products-button"/>
+
+                <p:column selectionMode="multiple" exportable="false"></p:column>
+                <!--                Columnas tabla-->
+                <p:column headerText="Nombre" sortBy="#{cliente.nombreCliente}">
+                    <h:outputText value="#{cliente.nombreCliente}"/>
+                </p:column>
+                <p:column headerText="RFC Persona Moral" sortBy="#{cliente.rfc}">
+                    <h:outputText value="#{cliente.rfc}"/>
+                </p:column>
+                <!-- Columna operaciones CRUD -->
+                <p:column exportable="false">
+                    <!-- Boton modificar cliente -->
+                    <p:commandButton icon="pi pi-pencil" update=":dialogs:contenido-modificar-cliente"
+                                     oncomplete="PF('ventanaModificar').show()"
+                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                        <f:setPropertyActionListener value="#{cliente}"
+                                                     target="#{clientesBean.clienteSeleccionado}"/>
+                        <p:resetInput target=":dialogs:contenido-modificar-cliente"/>
+                    </p:commandButton>
+                    <!-- Boton eliminar cliente-->
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('ventanaEliminar').show()">
+                        <f:setPropertyActionListener value="#{cliente}"
+                                                     target="#{clientesBean.clienteSeleccionado}"/>
+                    </p:commandButton>
+                    <p:linkButton outcome="nuevosPedidos" icon="pi pi-cart-plus" style="margin-left:20px;" disabled="false" value="Añadir Pedido">
+                        <f:param name="idCliente" value="#{cliente.idCliente}"/>
+                    </p:linkButton>
+                </p:column>
+            </p:dataTable>
+            <!-- Barra Herramientas -->
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <!-- Boton agregar Cliente -->
+                    <p:commandButton value="Agregar" icon="pi pi-plus" actionListener="#{clientesBean.nuevo()}"
+                                     update=":dialogs:contenido-ventana-agregar"
+                                     oncomplete="PF('ventanaAgregar').show()"
+                                     styleClass="ui-button-success" style="margin-right: .5rem">
+                        <p:resetInput target=":dialogs:contenido-ventana-agregar"/>
+                    </p:commandButton>
+                    <!-- Boton eliminar clientes seleccionados -->
+                    <p:commandButton id="delete-products-button" value="Eliminar seleccionados"
+                                     icon="pi pi-trash" styleClass="ui-button-danger"
+                                     disabled="#{clientesBean.clientesSeleccionados.size() == 0}"
+                                     actionListener="#{clientesBean.eliminarSeleccionados()}"
+                                     update="@this">
+                        <p:confirm header="Advertencia"
+                                   message="¿Eliminar productos seleccionados? Esto tambien eliminara sus partidas asociadas"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+
+                </p:toolbarGroup>
+            </p:toolbar>
+        </h:form>
+
+        <!-- Formularios en dialogo -->
+        <h:form id="dialogs">
+            <!-- Dialogo Modificar Cliente-->
+            <p:dialog header="Modificar cliente" showEffect="fade" modal="true" widgetVar="ventanaModificar"
+                      responsive="true">
+                <p:outputPanel id="contenido-modificar-cliente" class="ui-fluid">
+                    <p:outputPanel rendered="#{not empty clientesBean.clienteSeleccionado}">
+                        <!--Input nombre -->
+                        <div class="field">
+                            <p:outputLabel for="name">Nombre del cliente</p:outputLabel>
+                            <p:inputText id="name" value="#{clientesBean.clienteSeleccionado.nombreCliente}"
+                                         required="true"
+                                         maxlength="70"/>
+                        </div>
+                        <!--Input Descripción -->
+                        <div class="field">
+                            <p:outputLabel for="description">RFC del cliente</p:outputLabel>
+                            <p:inputTextarea id="description" value="#{clientesBean.clienteSeleccionado.rfc}"
+                                             maxlength="13" minLength="11" required="true"/>
+                        </div>
+                    </p:outputPanel>
+                </p:outputPanel>
+                <!-- Boton guardar y cancelar ventana (modificar) -->
+                <f:facet name="footer">
+                    <p:commandButton value="Guardar" icon="pi pi-check"
+                                     actionListener="#{clientesBean.modificarCliente()}"
+                                     update="contenido-modificar-cliente"
+                                     process="contenido-modificar-cliente @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times"
+                                     onclick="#{clientesBean.ocultarVentanaModificar()}"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+            <!-- Dialogo Agregar Cliente-->
+            <p:dialog header="Nuevo cliente" showEffect="fade" modal="true" widgetVar="ventanaAgregar"
+                      responsive="true">
+                <p:outputPanel id="contenido-ventana-agregar" class="ui-fluid">
+                    <p:outputPanel>
+                        <!--Input nombre -->
+                        <div class="field">
+                            <p:outputLabel for="nombre">Nombre del cliente</p:outputLabel>
+                            <p:inputText id="nombre" value="#{clientesBean.clienteSeleccionado.nombreCliente}"
+                                         required="true">
+                                <f:validateLength minimum="2"/>
+                                <f:validateLength maximum="50"/>
+                            </p:inputText>
+                        </div>
+                        <p:message for="nombre" style="width: fit-content"></p:message>
+                        <!--Input RFC -->
+                        <div class="field">
+                            <p:outputLabel for="descripcion">RFC Persona Fisica</p:outputLabel>
+                            <p:inputText id="descripcion" value="#{clientesBean.clienteSeleccionado.rfc}"
+                                         required="true">
+                                <f:validateLength minimum="11"/>
+                                <f:validateLength maximum="13"/>
+                            </p:inputText>
+                        </div>
+                        <p:message for="descripcion" style="width: fit-content"></p:message>
+                    </p:outputPanel>
+                </p:outputPanel>
+
+                <p:message for="descripcion"></p:message>
+                <!-- Boton guardar y cancelar (Ventana agregar) -->
+                <f:facet name="footer">
+                    <p:commandButton value="Agregar" icon="pi pi-check"
+                                     actionListener="#{clientesBean.agregarCliente()}"
+                                     update="contenido-ventana-agregar" process="contenido-ventana-agregar @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times"
+                                     onclick="#{clientesBean.ocultarVentanaAgregar()}"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <!-- Dialogo confirmar elimininar -->
+
+            <p:confirmDialog widgetVar="ventanaEliminar" showEffect="fade" width="300"
+                             message="¿Eliminar cliente?. Esto tambien eliminara sus partidas asociadas"
+                             header="Precaución" severity="warn">
+                <p:commandButton value="Si" icon="pi pi-check" actionListener="#{clientesBean.eliminarCliente()}"
+                                 process="@this" update=":form:delete-products-button"
+                                 oncomplete="PF('ventanaEliminar').hide()"/>
+                <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('ventanaEliminar').hide()"/>
+            </p:confirmDialog>
+
+
+            <!-- Dialogo confirmar elimininar seleccionados-->
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Eliminar" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times"/>
+            </p:confirmDialog>
+        </h:form>
+    </div>
+</h:body>
+</html>

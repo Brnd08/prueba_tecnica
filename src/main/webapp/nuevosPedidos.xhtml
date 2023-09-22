@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui" xmlns:ui="http://java.sun.com/jsf/facelets"
+      lang="es"
+      xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+    <title>Gestion de Articulos</title>
+
+    <ui:include src="header.xhtml"/>
+</h:head>
+
+<f:metadata>
+    <f:viewAction action="#{nuevosPedidosBean.init()}"></f:viewAction>
+    <f:viewAction action="#{articulosBean.init()}"></f:viewAction>
+    <f:viewAction action="#{clientesBean.init()}"></f:viewAction>
+    <f:viewParam name="idCliente" value="#{nuevosPedidosBean.idCliente}"/>
+</f:metadata>
+<title>Prueba 1</title>
+<h:body style="background-color: #0b5ed7 ">
+
+    <p:breadCrumb>
+        <p:menuitem value="Categories" url="/" />
+        <p:menuitem>Nuevo Pedido</p:menuitem>
+    </p:breadCrumb>
+    <div class="card">
+
+        <ui:include src="tablaArticulos.xhtml"/>
+
+        <p:toolbar>
+            <p:toolbarGroup>
+                <!-- Boton agregar Cliente -->
+                <p:commandButton value="Guardar" icon="pi pi-save" actionListener="#{clientesBean.nuevo()}"
+                                 update=":dialogs:contenido-guardar"
+                                 oncomplete="PF('GuardarPedido').show()"
+                                 styleClass="ui-button-success" style="margin-right: .5rem">
+                    <p:resetInput target=":dialogs:contenido-guardar"/>
+                </p:commandButton>
+
+            </p:toolbarGroup>
+        </p:toolbar>
+
+
+        <h:form id="dialogs">
+            <!-- Dialogo Guardar Pedido -->
+            <p:dialog header="Guardar Pedido" showEffect="fade" modal="true" widgetVar="GuardarPedido"
+                      responsive="true">
+                <p:outputPanel id="contenido-guardar" class="ui-fluid">
+                    <p:outputPanel >
+                        <!--Descripción pedido -->
+                        <div class="field">
+                            <p:outputLabel for="descripcion">Descripción pedido</p:outputLabel>
+                            <p:inputTextarea id="descripcion" value="#{nuevosPedidosBean.descripcionPedido}"
+                                             required="true"
+                                             maxlength="70"/>
+                        </div>
+                    </p:outputPanel>
+                </p:outputPanel>
+                <!-- Boton guardar y cancelar ventana (modificar) -->
+                <f:facet name="footer">
+                    <p:commandButton value="Guardar" icon="pi pi-check"
+                                     action="#{nuevosPedidosBean.guardar()}"
+                                     update="contenido-guardar"
+                                     oncomplete="PF('GuardarPedido').hide()"
+                                     process="contenido-guardar @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times"
+                                     onclick="PF('GuardarPedido').hide()"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+        </h:form>
+
+    </div>
+</h:body>
+</html>

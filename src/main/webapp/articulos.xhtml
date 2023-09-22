@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui" xmlns:ui="http://java.sun.com/jsf/facelets"
+      lang="es"
+      xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+    <title>Gestion de Articulos</title>
+
+    <ui:include src="header.xhtml"/>
+</h:head>
+
+<f:metadata>
+    <f:viewAction action="#{articulosBean.init()}"></f:viewAction>
+</f:metadata>
+<title>Prueba 1</title>
+<h:body style="background-color: #0b5ed7 ">
+    <p:breadCrumb>
+        <p:menuitem value="Categories" url="#" />
+        <p:menuitem>Articulos</p:menuitem>
+    </p:breadCrumb>
+    <div class="card">
+        <h:form id="form">
+            <p:growl id="messages" showDetail="true"/>
+            <!-- Tabla de articulos -->
+            <p:dataTable id="dt-articulos" widgetVar="dtArticulos" var="articulo" value="#{articulosBean.articulos}"
+                         reflow="true" styleClass="products-table" selection="#{articulosBean.articulosSeleccionados}"
+                         rowKey="#{articulo.idArticulo}" paginator="true" rows="5" rowSelectMode="add"
+                         paginatorPosition="top">
+                <!--                Eventos de seleccion -->
+
+                <p:ajax event="rowSelect" update=":form:delete-products-button"/>
+                <p:ajax event="rowUnselect" update=":form:delete-products-button"/>
+                <p:ajax event="rowSelectCheckbox" update=":form:delete-products-button"/>
+                <p:ajax event="rowUnselectCheckbox" update=":form:delete-products-button"/>
+                <p:ajax event="toggleSelect" update=":form:delete-products-button"/>
+
+                <p:column selectionMode="multiple" exportable="false"></p:column>
+                <!--                Columnas tabla-->
+                <p:column headerText="Nombre" sortBy="#{articulo.nombre}">
+                    <h:outputText value="#{articulo.nombre}"/>
+                </p:column>
+                <p:column headerText="Descripcion" sortBy="#{articulo.descripcion}">
+                    <h:outputText value="#{articulo.descripcion}"/>
+                </p:column>
+                <p:column headerText="Precio" sortBy="#{articulo.precio}">
+                    <h:outputText value="#{articulo.precio}" style="font-weight: 700">
+                        <f:convertNumber currencySymbol="$" type="currency"/>
+                    </h:outputText>
+                </p:column>
+                <!-- Columna operaciones CRUD -->
+                <p:column exportable="false">
+                    <!-- Boton modificar articulo -->
+                    <p:commandButton icon="pi pi-pencil" update=":dialogs:contenido-modificar-articulo"
+                                     oncomplete="PF('ventanaModificar').show()"
+                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                        <f:setPropertyActionListener value="#{articulo}"
+                                                     target="#{articulosBean.articuloSeleccionado}"/>
+                        <p:resetInput target=":dialogs:contenido-modificar-articulo"/>
+                    </p:commandButton>
+                    <!-- Boton eliminar articulo-->
+                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                     process="@this"
+                                     oncomplete="PF('ventanaEliminar').show()">
+                        <f:setPropertyActionListener value="#{articulo}"
+                                                     target="#{articulosBean.articuloSeleccionado}"/>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+            <!-- Barra Herramientas -->
+            <p:toolbar>
+                <p:toolbarGroup>
+                    <!-- Boton agregar Articulo -->
+                    <p:commandButton value="Agregar" icon="pi pi-plus" actionListener="#{articulosBean.nuevo()}"
+                                     update=":dialogs:contenido-ventana-agregar"
+                                     oncomplete="PF('ventanaAgregar').show()"
+                                     styleClass="ui-button-success" style="margin-right: .5rem">
+                        <p:resetInput target=":dialogs:contenido-ventana-agregar"/>
+                    </p:commandButton>
+                    <!-- Boton eliminar articulos seleccionados -->
+                    <p:commandButton id="delete-products-button" value="Eliminar seleccionados"
+                                     icon="pi pi-trash" styleClass="ui-button-danger"
+                                     disabled="#{articulosBean.articulosSeleccionados.size() == 0}"
+                                     actionListener="#{articulosBean.eliminarSeleccionados()}"
+                                     update="@this">
+                        <p:confirm header="Advertencia"
+                                   message="¿Eliminar productos seleccionados? Esto tambien eliminara sus partidas asociadas"
+                                   icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+
+                </p:toolbarGroup>
+            </p:toolbar>
+        </h:form>
+
+        <!-- Formularios en dialogo -->
+        <h:form id="dialogs">
+            <!-- Dialogo Modificar Articulo-->
+            <p:dialog header="Modificar articulo" showEffect="fade" modal="true" widgetVar="ventanaModificar"
+                      responsive="true">
+                <p:outputPanel id="contenido-modificar-articulo" class="ui-fluid">
+                    <p:outputPanel rendered="#{not empty articulosBean.articuloSeleccionado}">
+                        <!--Input nombre -->
+                        <div class="field">
+                            <p:outputLabel for="name">Nombre del producto</p:outputLabel>
+                            <p:inputText id="name" value="#{articulosBean.articuloSeleccionado.nombre}" required="true"
+                                         maxlength="50"/>
+                        </div>
+                        <!--Input Descripción -->
+                        <div class="field">
+                            <p:outputLabel for="description">Descripción del producto</p:outputLabel>
+                            <p:inputTextarea id="description" value="#{articulosBean.articuloSeleccionado.descripcion}"
+                                             maxlength="255" required="true"/>
+                        </div>
+                        <!--Input Precio -->
+                        <div class="formgrid grid">
+                            <div class="field col">
+                                <p:outputLabel for="price">Precio</p:outputLabel>
+                                <p:inputNumber id="price" value="#{articulosBean.articuloSeleccionado.precio}"
+                                               symbol=" MX" symbolPosition="s" decimalSeparator="."
+                                               thousandSeparator=","/>
+                            </div>
+                        </div>
+                    </p:outputPanel>
+                </p:outputPanel>
+                <!-- Boton guardar y cancelar ventana (modificar) -->
+                <f:facet name="footer">
+                    <p:commandButton value="Guardar" icon="pi pi-check"
+                                     actionListener="#{articulosBean.modificarArticulo()}"
+                                     update="contenido-modificar-articulo"
+                                     process="contenido-modificar-articulo @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times"
+                                     onclick="#{articulosBean.ocultarVentanaModificar()}"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <!-- Dialogo Agregar Articulo-->
+            <p:dialog header="Nuevo articulo" showEffect="fade" modal="true" widgetVar="ventanaAgregar"
+                      responsive="true">
+                <p:outputPanel id="contenido-ventana-agregar" class="ui-fluid">
+                    <p:outputPanel>
+                        <!--Input nombre -->
+                        <div class="field">
+                            <p:outputLabel for="nombre">Nombre del producto</p:outputLabel>
+                            <p:inputText id="nombre" value="#{articulosBean.articuloSeleccionado.nombre}"
+                                         required="true"
+                                         maxlength="50"/>
+                        </div>
+                        <!--Input Descripción -->
+                        <div class="field">
+                            <p:outputLabel for="descripcion">Descripción del producto</p:outputLabel>
+                            <p:inputTextarea id="descripcion" value="#{articulosBean.articuloSeleccionado.descripcion}"
+                                             maxlength="255" required="true"/>
+                        </div>
+                        <!--Input Precio -->
+                        <div class="formgrid grid">
+                            <div class="field col">
+                                <p:outputLabel for="precio">Precio</p:outputLabel>
+                                <p:inputNumber id="precio" value="#{articulosBean.articuloSeleccionado.precio}"
+                                               symbol=" MX" symbolPosition="s" decimalSeparator="."
+                                               thousandSeparator=","/>
+                            </div>
+                        </div>
+                    </p:outputPanel>
+                </p:outputPanel>
+                <!-- Boton guardar y cancelar (Ventana agregar) -->
+                <f:facet name="footer">
+                    <p:commandButton value="Agregar" icon="pi pi-check"
+                                     actionListener="#{articulosBean.agregarArticulo()}"
+                                     update="contenido-ventana-agregar" process="contenido-ventana-agregar @this"/>
+                    <p:commandButton value="Cancelar" icon="pi pi-times"
+                                     onclick="#{articulosBean.ocultarVentanaAgregar()}"
+                                     class="ui-button-secondary" type="button"/>
+                </f:facet>
+            </p:dialog>
+
+            <!-- Dialogo confirmar elimininar -->
+
+            <p:confirmDialog widgetVar="ventanaEliminar" showEffect="fade" width="300"
+                             message="¿Eliminar articulo?. Esto tambien eliminara sus partidas asociadas"
+                             header="Precaución" severity="warn">
+                <p:commandButton value="Si" icon="pi pi-check" actionListener="#{articulosBean.eliminarArticulo()}"
+                                 process="@this" update=":form:delete-products-button"
+                                 oncomplete="PF('ventanaEliminar').hide()"/>
+                <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                 onclick="PF('ventanaEliminar').hide()"/>
+            </p:confirmDialog>
+
+
+            <!-- Dialogo confirmar elimininar seleccionados-->
+
+            <p:confirmDialog global="true" showEffect="fade" width="300">
+                <p:commandButton value="Eliminar" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check"/>
+                <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                 icon="pi pi-times"/>
+            </p:confirmDialog>
+        </h:form>
+    </div>
+</h:body>
+</html>
