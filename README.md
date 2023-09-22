@@ -14,3 +14,5 @@ Crear artefacto
     ./mvnw package
     java -jar <archivo>.war
 ```
+
+Utiliza JDK 1.8. mysql, spring-boot con JSF y PrimeFaces, tomcat emmbed y JasperReports, Spring data Jpa/hibernate
