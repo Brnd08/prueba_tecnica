@@ -1,5 +1,5 @@
 # PruebaTecnica
-Puedes acceder a la demo en la siguiente dirección [DEMO PRUEBA TECNICA](http://129.146.87.236:8080/)
+Puedes acceder a la demo en la siguiente dirección [http://129.146.87.236:8080](http://129.146.87.236:8080/)
 
 # Desarrollo
 
